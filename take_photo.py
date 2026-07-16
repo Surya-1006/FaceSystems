@@ -1,38 +1,39 @@
 import cv2
 import os
-import time
 
-
-name = input("Enter the name of the person to fix (e.g., surya): ").strip()
+name = input("Enter name for the database: ").strip()
 if not name:
     print("Error: Name cannot be empty.")
     exit()
 
-folder_dir = r"C:\FaceSystems\known_faces"
-image_path = os.path.join(folder_dir, f"{name}.jpg")
+output_dir = r"C:\FaceSystems\known_faces"
+filename = f"{name}.jpg"
+output_path = os.path.join(output_dir, filename)
 
+os.makedirs(output_dir, exist_ok=True)
 
-if not os.path.exists(image_path):
-    print(f"Error: Could not find '{image_path}'.")
-    print("Please make sure the file is in your 'known_faces' folder.")
-    exit()
+cam = cv2.VideoCapture(0)
 
-try:
-    
-    img = cv2.imread(image_path)
-    
-    if img is None:
-        print("Error: OpenCV could not read the image. It might be corrupted.")
-        exit()
+while True:
+    ret, frame = cam.read()
+    if not ret:
+        break
         
+    cv2.imshow("Capture Window", frame)
     
-    time.sleep(0.2)
-    os.remove(image_path)
-    
-  
-    cv2.imwrite(image_path, img)
-    
-    print(f"\n Success '{name}.jpg' has been saved.")
+    key = cv2.waitKey(1) & 0xFF
+    if key == 32 or key == 13:  
+        try:
+            cv2.imwrite(output_path, frame)
+            test_img = cv2.imread(output_path)
+            if test_img is not None:
+                cv2.imwrite(output_path, test_img)
+        except Exception:
+            pass
+        break
+        
+    elif key == ord('q') or key == ord('Q'):  
+        break
 
-except Exception as e:
-    print(f"\n An error occurred: {e}")
+cam.release()
+cv2.destroyAllWindows()
